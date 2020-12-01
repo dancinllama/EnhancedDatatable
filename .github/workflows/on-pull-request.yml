@@ -14,7 +14,7 @@ jobs:
            apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:git-core/ppa && apt-get update && apt-get install -y git
            
       - name: "Copy Secret to Temp File for JWT auth"
-        run : 'echo "${{ secrets.JWT_KEY} > key'
+        run : 'echo "${{ secrets.JWT_KEY}} > key'
       
       - name: "Checkout code"
         uses: actions/checkout@v2
