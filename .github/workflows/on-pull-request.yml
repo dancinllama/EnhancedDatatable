@@ -30,7 +30,9 @@ jobs:
       
       - name: Authenticate with SFDX using UAT username and password, and set as default for additional sdfx commands
         if: github.ref == 'refs/heads/uat'
-        run: sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY_UAT }} --jwtkeyfile server.key --username ${{ secrets.SALESFORCE_USERNAME_UAT }} --setalias checkout
+        run: |
+          echo ${{ secrets.JWT_KEY}} >> ./server.key
+          sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY_UAT }} --jwtkeyfile ./server.key --username ${{ secrets.SALESFORCE_USERNAME_UAT }} --setalias checkout
         
       - name: Set Default SFDX target org
         run: sfdx force:config:set defaultusername=checkout
