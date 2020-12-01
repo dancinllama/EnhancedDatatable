@@ -13,9 +13,6 @@ jobs:
         run: |
            apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:git-core/ppa && apt-get update && apt-get install -y git
            
-      - name: "Copy Secret to Temp File for JWT auth"
-        run : echo ${{ secrets.JWT_KEY}} >> server.key
-      
       - name: "Checkout code"
         uses: actions/checkout@v2
       
@@ -26,11 +23,15 @@ jobs:
         
       - name: Authenticate with SFDX using PRODUCTION username and password, and set as default for additional sdfx commands
         if: github.ref == 'refs/heads/master'
-        run: sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY }} --jwtkeyfile server.key --username -u ${{ secrets.SALESFORCE_USERNAME }} --setalias checkout
+        run: |
+          echo "${{ secrets.JWT_KEY}}" >> ./server.key
+          sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY }} --jwtkeyfile server.key --username -u ${{ secrets.SALESFORCE_USERNAME }} --setalias checkout
       
       - name: Authenticate with SFDX using UAT username and password, and set as default for additional sdfx commands
         if: github.ref == 'refs/heads/uat'
-        run: sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY_UAT }} --jwtkeyfile server.key --username ${{ secrets.SALESFORCE_USERNAME_UAT }} --setalias checkout
+        run: |
+          echo "${{ secrets.JWT_KEY}}" >> ./server.key
+          sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY_UAT }} --jwtkeyfile ./server.key --username ${{ secrets.SALESFORCE_USERNAME_UAT }} --setalias checkout
         
       - name: Set Default SFDX target org
         run: sfdx force:config:set defaultusername=checkout
@@ -81,6 +82,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
          github_token: ${{ secrets.GITHUB_TOKEN }}
+         branch: ${{ github.ref }}
          
       - name: Push changes to Salesforce
         run: sfdx force:source:deploy -x ./manifest/package.xml
