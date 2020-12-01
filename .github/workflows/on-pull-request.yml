@@ -1,9 +1,10 @@
-name: sfdx-template on push
+name: Deploy On Push on push
 
-on: [pull_request]
+on: [push]
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/uat'
     runs-on: ubuntu-latest
     name: Retrieve code and check into repository
     container: salesforce/salesforcedx
