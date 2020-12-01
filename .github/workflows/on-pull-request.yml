@@ -14,7 +14,7 @@ jobs:
            apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:git-core/ppa && apt-get update && apt-get install -y git
           
       - name: "Add Accenture Powerkit Plugin"
-        run: echo 'y' | sfdx plugins:install sfpowerkit
+        run: echo 'y' | sfdx plugins:install sfpowerkit || true
       
       - name: "Checkout code"
         uses: actions/checkout@v2
