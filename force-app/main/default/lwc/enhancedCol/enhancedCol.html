@@ -1,0 +1,73 @@
+<template>
+    <template if:true={filter}>
+        <template if:true={isSelect}>
+            <lightning-combobox name="filter" placeholder="Select one" variant="label-hidden" options={options} onchange={handleSelectChange}></lightning-combobox>
+        </template>
+        <template if:true={isLookup}>
+            <lightning-record-edit-form object-api-name={objectApiName}>
+                <lightning-input-field field-name={fieldName} variant="label-hidden" onchange={handleLookupChange}></lightning-input-field>
+            </lightning-record-edit-form>
+        </template>
+        <template if:true={isText}>
+            <lightning-input variant="label-hidden" type="text" onchange={handleTextChange}></lightning-input>
+        </template>
+        <template if:true={isDateRange}>
+            <lightning-input label="From" type="date" onchange={handleFromChange}></lightning-input>
+            <lightning-input label="To" type="date" onchange={handleToChange}></lightning-input>
+        </template>
+        <template if:true={isNumericRange}>
+            <lightning-input label="From" type="number" onchange={handleFromChange}></lightning-input>
+            <lightning-input label="To" type="number" onchange={handleToChange}></lightning-input>
+        </template>
+    </template>
+    <template if:true={footer}>
+        <strong>
+            <template if:true={isText}>
+                {val}
+            </template>
+            <template if:true={isPhone}>
+                <lightning-formatted-phone value={val}></lightning-formatted-phone>
+            </template>
+            <template if:true={isDate}>
+                <lightning-formatted-date-time value={val}></lightning-formatted-date-time> 
+                <!--day={day} era={era} hour={hour} hour12={hour12} minute={minute} month={month} second={second} time-zone={timeZone} time-zone-name={timeZoneName} weekday={weekday} year={year}></lightning-formatted-date-time>-->
+            </template>
+            <template if:true={isNumeric}>
+                <lightning-formatted-number value={val}></lightning-formatted-number>
+                <!--format-style={formatStyle} minimum-fraction-digits={minimumFractionDigits} maximum-fraction-digits={maximumFractionDigits) minimum-integer-digits={minimumIntegerDigits} minimum-significant-digits={minimumSignificantDigits} maximum-significant-digits={maximumSignificantDigits} currency-code={currencyCode} currency-display-as={currencyDisplayAs} ></lightning-formatted-number>-->
+            </template>
+        </strong>
+    </template>
+    <template if:false={isFilterOrFooter}>
+        <template if:true={readOnly}>
+            <template if:true={isPhone}>
+                <lightning-formatted-phone value={val}></lightning-formatted-phone>
+            </template>
+            <template if:true={isDate}>
+                <lightning-formatted-date-time value={val} day={day} era={era} hour={hour} hour12={hour12} minute={minute} month={month} second={second} time-zone={timeZone} time-zone-name={timeZoneName} weekday={weekday} year={year}></lightning-formatted-date-time>
+            </template>
+            <template if:true={isNumber}>
+                <lightning-formatted-number value={val} format-style={formatStyle} minimum-fraction-digits={minimumFractionDigits} maximum-fraction-digits={maximumFractionDigits) minimum-integer-digits={minimumIntegerDigits} minimum-significant-digits={minimumSignificantDigits} maximum-significant-digits={maximumSignificantDigits} currency-code={currencyCode} currency-display-as={currencyDisplayAs} ></lightning-formatted-number>
+            </template>
+        </template>
+        <template if:false={readOnly}>
+            <template if:true={isSelect}>
+                <lightning-combobox options={options} variant="label-hidden" value={val} onchange={handleValueChange}></lightning-combobox>
+            </template>
+            <template if:true={isText}>
+                <lightning-input variant="label-hidden" type={type} value={val} onchange={handleValueChange}></lightning-input>
+            </template>
+            <template if:true={isDate}>
+                <lightning-input variant="label-hidden" type="date" value={val} onchange={handleValueChange}></lightning-input>
+            </template>
+            <template if:true={isNumeric}>
+                <lightning-input variant="label-hidden" type="number" value={val} onchange={handleValueChange}></lightning-input>
+            </template>
+            <template if:true={isLookup}>
+                <lightning-record-edit-form object-api-name={objectApiName}>
+                    <lightning-input-field variant="label-hidden" field-name={fieldName} value={val} onchange={handleLookupValueChange}></lightning-input-field>
+                </lightning-record-edit-form>
+            </template>
+        </template>
+    </template>
+</template>
