@@ -80,6 +80,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
          github_token: ${{ secrets.GITHUB_TOKEN }}
+         branch: ${{ github.ref }}
          
       - name: Push changes to Salesforce
         run: sfdx force:source:deploy -x ./manifest/package.xml
