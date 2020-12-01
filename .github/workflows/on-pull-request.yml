@@ -1,9 +1,10 @@
-name: sfdx-template on push
+name: Deploy On Push on push
 
-on: [pull_request]
+on: [push]
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/uat'
     runs-on: ubuntu-latest
     name: Retrieve code and check into repository
     container: salesforce/salesforcedx
@@ -11,9 +12,9 @@ jobs:
       - name: "Update container version of git"
         run: |
            apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:git-core/ppa && apt-get update && apt-get install -y git
-          
-      - name: "Add Accenture Powerkit Plugin"
-        run: echo 'y' | sfdx plugins:install sfpowerkit
+           
+      - name: "Copy Secret to Temp File for JWT auth"
+        run : 'echo "${{ secrets.JWT_KEY}}" > key'
       
       - name: "Checkout code"
         uses: actions/checkout@v2
@@ -25,11 +26,11 @@ jobs:
         
       - name: Authenticate with SFDX using PRODUCTION username and password, and set as default for additional sdfx commands
         if: github.ref == 'refs/heads/master'
-        run: sfdx sfpowerkit:auth:login -r ${{ secrets.SALESFORCE_URL }} -u ${{ secrets.SALESFORCE_USERNAME }} -p ${{ secrets.SALESFORCE_PASSWORD }} -a checkout
+        run: sfdx auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY }} --jwtkeyfile key --username -u ${{ secrets.SALESFORCE_USERNAME }} --setalias checkout
       
       - name: Authenticate with SFDX using UAT username and password, and set as default for additional sdfx commands
         if: github.ref == 'refs/heads/uat'
-        run: sfdx sfpowerkit:auth:login -r ${{ secrets.SALESFORCE_UAT_URL }} -u ${{ secrets.SALESFORCE_UAT_USERNAME }} -p ${{ secrets.SALESFORCE_UAT_PASSWORD }} -a checkout
+        run: sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY_UAT }} --jwtkeyfile key --username ${{ secrets.SALESFORCE_USERNAME_UAT }} --setalias checkout
         
       - name: Set Default SFDX target org
         run: sfdx force:config:set defaultusername=checkout
@@ -46,9 +47,9 @@ jobs:
         run: |
           sfdx force:apex:test:run -c -u checkout -r json > ./reports/codecoverage.json || true
           
-      - name: Run Health Check
-        run: | 
-          sfdx sfpowerkit:org:healthcheck --json > ./reports/healthcheck.json    
+      #- name: Run Health Check
+      #  run: | 
+      #    sfdx sfpowerkit:org:healthcheck --json > ./reports/healthcheck.json    
          
       # Cache node_modules to speed up the process
       - name: Restore node_modules cache
