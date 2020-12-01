@@ -4,7 +4,7 @@
 
 ## Build Status
 
-![sfdx-template on push](https://github.com/dancinllama/sfdx-template/workflows/sfdx-template%20on%20push/badge.svg)
+![sfdx-template on push](https://github.com/dancinllama/EnhancedDatatable/workflows/sfdx-template%20on%20push/badge.svg)
 
 ## Deploy to a Scratch Org
 
