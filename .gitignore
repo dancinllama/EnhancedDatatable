@@ -17,4 +17,5 @@ yarn.lock
 sfdx/
 **.tar.xz
 echo
+.gitignore
 
