@@ -1,4 +1,4 @@
-name: Deploy On Push
+name: Deploy On Push on push
 
 on: [push]
 
@@ -16,6 +16,11 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v2
       
+      - name: "Run JEST tests for Lightning Web Components"
+        run: |
+          npm install @salesforce/sfdx-lwc-jest@0.9.2
+          npm run test:unit
+      
       - name: "Configure Git"
         run: |
           git config --local user.email "action@github.com"
@@ -25,7 +30,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         run: |
           echo "${{ secrets.JWT_KEY}}" >> ./server.key
-          sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY }} --jwtkeyfile server.key --username ${{ secrets.SALESFORCE_USERNAME }} --setalias checkout
+          sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY }} --jwtkeyfile server.key --username -u ${{ secrets.SALESFORCE_USERNAME }} --setalias checkout
       
       - name: Authenticate with SFDX using UAT username and password, and set as default for additional sdfx commands
         if: github.ref == 'refs/heads/uat'
