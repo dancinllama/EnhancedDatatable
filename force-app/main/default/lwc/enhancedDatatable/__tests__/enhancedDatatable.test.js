@@ -16,7 +16,9 @@ describe('c-enhanced-datatable', () => {
         document.body.appendChild(exampleElement);
         expect(exampleElement).not.toBeNull();
 
-        const datatable = exampleElement.shadowRoot.querySelector('c-enhanced-datatable');
+        const datatable = exampleElement.shadowRoot.querySelector(
+            'c-enhanced-datatable'
+        );
         const rows = datatable.data;
         //should be 13, with filter and summary.
         expect(rows.length).toBe(11);
