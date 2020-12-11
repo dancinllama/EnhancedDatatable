@@ -11,10 +11,14 @@ jobs:
     steps:
       - name: "Update container version of git"
         run: |
-           apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:git-core/ppa && apt-get update && apt-get install -y git
+           apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:git-core/ppa && apt-get update && apt-get install -y git && npm install @salesforce/sfdx-lwc-jest0.9.2
            
       - name: "Checkout code"
         uses: actions/checkout@v2
+      
+      - name: "Run JEST tests for Lightning Web Components"
+        run: |
+          npm run test:unit
       
       - name: "Configure Git"
         run: |
