@@ -1,0 +1,95 @@
+name: Deploy On Push
+
+on: [push]
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/uat'
+    runs-on: ubuntu-latest
+    name: Retrieve code and check into repository
+    container: salesforce/salesforcedx
+    steps:
+      - name: "Update container version of git"
+        run: |
+           apt-get update && apt-get install software-properties-common -y && apt-add-repository ppa:git-core/ppa && apt-get update && apt-get install -y git && npm install @salesforce/sfdx-lwc-jest0.9.2
+           
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+      
+      - name: "Configure Git"
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+      - name: "Run JEST tests"
+        run: |
+          npm run test:unit
+        
+      - name: Authenticate with SFDX using PRODUCTION username and password, and set as default for additional sdfx commands
+        if: github.ref == 'refs/heads/master'
+        run: |
+          echo "${{ secrets.JWT_KEY}}" >> ./server.key
+          sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY }} --jwtkeyfile server.key --username ${{ secrets.SALESFORCE_USERNAME }} --setalias checkout
+      
+      - name: Authenticate with SFDX using UAT username and password, and set as default for additional sdfx commands
+        if: github.ref == 'refs/heads/uat'
+        run: |
+          echo "${{ secrets.JWT_KEY}}" >> ./server.key
+          sfdx force:auth:jwt:grant --clientid ${{ secrets.CONSUMER_KEY_UAT }} --jwtkeyfile ./server.key --username ${{ secrets.SALESFORCE_USERNAME_UAT }} --setalias checkout
+        
+      - name: Set Default SFDX target org
+        run: sfdx force:config:set defaultusername=checkout
+        
+      - name: Make reports directory
+        run: mkdir -p ./reports
+
+      - name: Run Apex PMD Static (Code Analyzer)
+        run: |
+          touch ./reports/pmd.json
+          sfdx sfpowerkit:source:pmd -d ./force-app/main/default -r category/apex/design.xml -f json -o ./reports/pmd.json || true
+       
+      - name: Run Code Coverage
+        run: |
+          sfdx force:apex:test:run -c -u checkout -r json > ./reports/codecoverage.json || true
+          
+      #- name: Run Health Check
+      #  run: | 
+      #    sfdx sfpowerkit:org:healthcheck --json > ./reports/healthcheck.json    
+         
+      # Cache node_modules to speed up the process
+      - name: Restore node_modules cache
+        id: cache-npm
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ env.cache-name }}-
+            npm-
+
+      # Install npm dependencies for Prettier and Jest
+      - name: 'Install npm dependencies'
+        if: steps.cache-npm.outputs.cache-hit != 'true'
+        run: npm install
+
+      # Prettier formatting
+      - name: 'Code formatting verification with Prettier'
+        run: npm run prettier --write --check || true
+
+      # Commit prettified files if they differ from repo
+      - name: Commit prettified files (if any)
+        run: |
+          git add .
+          git commit -m "Generated reports and Prettified code" || true
+
+      - name: Push reports and prettified changes
+        uses: ad-m/github-push-action@master
+        with:
+         github_token: ${{ secrets.GITHUB_TOKEN }}
+         branch: ${{ github.ref }}
+         
+      - name: Push changes to Salesforce
+        run: sfdx force:source:deploy -x ./manifest/package.xml
+          #sfdx force:source:convert -d ./metadata
+          #sfdx force:source:deploy -d ./metadata -u checkout
+          #rm -rf ./metadata
