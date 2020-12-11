@@ -18,7 +18,8 @@ describe('c-enhanced-datatable', () => {
 
         const datatable = exampleElement.shadowRoot.querySelector('c-enhanced-datatable');
         const rows = datatable.data;
+
         //should be 13, with filter and summary.
-        expect(rows.length).toBe(11);
+        expect(rows.length).toBe(13);
     });
 });
